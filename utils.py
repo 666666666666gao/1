@@ -50,7 +50,7 @@ class CustomImageDataset(Dataset):
 class DeepCrackDataset(Dataset):
     def __init__(self, args, data_part=None):
         self.data_part = data_part
-        self.augmentation_prob = 0.7  # 数据增强概率
+        self.augmentation_prob = 0.7  # 增加数据增强概率
         self.args = args
         
         # 初始化路径列表
@@ -97,14 +97,61 @@ class DeepCrackDataset(Dataset):
         transformer.append(transforms.Resize((image_width, image_height)))
         mask_transformer.append(transforms.Resize((mask_width, mask_height)))
 
-        # 训练集数据增强（只保留水平/垂直翻转）
+        # 训练集数据增强
         if self.data_part == 'train':
+            # 随机旋转
+            if random.random() < self.augmentation_prob:
+                angle = random.uniform(-15, 15)
+                image = F.rotate(image, angle)
+                mask = F.rotate(mask, angle)
+
+            # 随机翻转
             if random.random() < self.augmentation_prob:
                 image = F.hflip(image)
                 mask = F.hflip(mask)
             if random.random() < self.augmentation_prob:
                 image = F.vflip(image)
                 mask = F.vflip(mask)
+                
+            # 随机裁剪和缩放
+            if random.random() < self.augmentation_prob:
+                scale = random.uniform(0.8, 1.2)
+                new_size = (int(image_width * scale), int(image_height * scale))
+                image = F.resize(image, new_size)
+                mask = F.resize(mask, new_size)
+                # 只有当新尺寸大于等于目标尺寸时才进行随机裁剪，否则直接resize回目标尺寸
+                if new_size[0] >= image_width and new_size[1] >= image_height:
+                    i = random.randint(0, new_size[0] - image_width)
+                    j = random.randint(0, new_size[1] - image_height)
+                    image = F.crop(image, i, j, image_width, image_height)
+                    mask = F.crop(mask, i, j, mask_width, mask_height)
+                else:
+                    image = F.resize(image, (image_width, image_height))
+                    mask = F.resize(mask, (mask_width, mask_height))
+
+            # 颜色增强
+            if random.random() < self.augmentation_prob:
+                # 亮度、对比度、饱和度、色调调整
+                image = F.adjust_brightness(image, random.uniform(0.8, 1.2))
+                image = F.adjust_contrast(image, random.uniform(0.8, 1.2))
+                image = F.adjust_saturation(image, random.uniform(0.8, 1.2))
+                image = F.adjust_hue(image, random.uniform(-0.1, 0.1))
+
+            # 随机噪声
+            if random.random() < self.augmentation_prob:
+                # 将图像转换为float类型并归一化到[0,1]范围
+                image_np = np.array(image).astype(np.float32) / 255.0
+                # 生成噪声
+                noise = np.random.normal(0, 0.1, image_np.shape).astype(np.float32)
+                # 添加噪声并裁剪到[0,1]范围
+                image_np = np.clip(image_np + noise, 0, 1)
+                # 转回PIL图像
+                image = Image.fromarray((image_np * 255).astype(np.uint8))
+
+            # 随机模糊
+            if random.random() < self.augmentation_prob:
+                blur_kernel = random.choice([3, 5])
+                image = image.filter(ImageFilter.GaussianBlur(radius=random.uniform(0.1, 0.5)))
 
         # 转换为张量
         transformer.append(transforms.ToTensor())
