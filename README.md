@@ -100,50 +100,51 @@ flowchart TD
 
 ---
 
-## 🧮 损失函数与评估指标详解
+## 🧮 损失函数与评估指标
 
 ### 1. 二值交叉熵（BCE）
 用于像素级二分类，衡量预测概率与真实标签的差异。
 
 公式：
+
 $$
-\text{BCE} = -\frac{1}{N} \sum_{i=1}^N \left[ y_i \log(p_i) + (1-y_i) \log(1-p_i) \right]
+\mathrm{BCE} = -\frac{1}{N} \sum_{i=1}^N \left[ y_i \log(p_i) + (1-y_i) \log(1-p_i) \right]
 $$
 其中 $y_i$ 为真实标签，$p_i$ 为预测概率。
 
 ### 2. Dice Loss（Dice系数损失）
 衡量预测掩码与真实掩码的重叠程度，适合处理类别极不平衡的分割任务。
 
-公式：
 $$
-\text{Dice} = \frac{2 \sum_i p_i y_i}{\sum_i p_i + \sum_i y_i}
+\mathrm{Dice} = \frac{2 \sum_i p_i y_i}{\sum_i p_i + \sum_i y_i}
 $$
-Dice Loss $= 1 - \text{Dice}$
+
+Dice Loss $= 1 - \mathrm{Dice}$
 
 ### 3. IoU Loss（交并比损失）
 衡量预测与真实掩码的交集与并集比例。
 
-公式：
 $$
-\text{IoU} = \frac{\sum_i p_i y_i}{\sum_i p_i + \sum_i y_i - \sum_i p_i y_i}
+\mathrm{IoU} = \frac{\sum_i p_i y_i}{\sum_i p_i + \sum_i y_i - \sum_i p_i y_i}
 $$
-IoU Loss $= 1 - \text{IoU}$
+
+IoU Loss $= 1 - \mathrm{IoU}$
 
 ### 4. F1 Score（F1分数）
 综合考虑精确率（Precision）和召回率（Recall），是分割常用的综合指标。
 
-公式：
 $$
-\text{F1} = \frac{2 \cdot \text{Precision} \cdot \text{Recall}}{\text{Precision} + \text{Recall}}
+\mathrm{F1} = \frac{2 \cdot \mathrm{Precision} \cdot \mathrm{Recall}}{\mathrm{Precision} + \mathrm{Recall}}
 $$
+
 其中：
 
 $$
-\text{Precision} = \frac{TP}{TP + FP}
+\mathrm{Precision} = \frac{TP}{TP + FP}
 $$
 
 $$
-\text{Recall} = \frac{TP}{TP + FN}
+\mathrm{Recall} = \frac{TP}{TP + FN}
 $$
 
 ### 5. 评估流程图
