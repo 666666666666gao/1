@@ -55,6 +55,51 @@ graph TD
 
 ---
 
+## 🚦 训练、预测、评估流程图与简介
+
+### 1. 训练流程
+```mermaid
+flowchart TD
+    A[加载数据集] --> B[数据增强/预处理]
+    B --> C[模型初始化]
+    C --> D{是否加载预训练权重}
+    D --是--> E[加载权重]
+    D --否--> F[随机初始化]
+    E & F --> G[训练循环]
+    G --> H[验证集评估]
+    H --> I{早停/保存最优模型}
+    I --满足条件--> J[保存权重/曲线]
+    I --未满足--> G
+    J --> K[训练结束]
+```
+- 支持超参数优化、早停、断点续训、自动保存最优模型。
+- 训练过程自动保存最优模型和训练曲线。
+
+### 2. 预测流程
+```mermaid
+flowchart TD
+    A[加载模型与权重] --> B[加载图片]
+    B --> C{是否自动参数搜索}
+    C --是--> D[遍历参数组合]
+    D --> E[推理+评估]
+    E --> F[保存最佳参数]
+    C --否--> G[直接推理]
+    F & G --> H[后处理+保存掩码]
+    H --> I[输出可视化结果]
+```
+- 自动搜索最佳后处理参数，支持批量预测和可视化。
+
+### 3. 评估流程
+```mermaid
+flowchart TD
+    A[加载预测掩码与GT] --> B[批量评估]
+    B --> C[输出F1/IoU等指标]
+    C --> D[生成评估报告]
+```
+- 支持批量评估，输出分割指标和可视化报告。
+
+---
+
 ## 🧮 损失函数与评估指标详解
 
 ### 1. 二值交叉熵（BCE）
@@ -73,7 +118,7 @@ $$
 $$
 \text{Dice} = \frac{2 \sum_i p_i y_i}{\sum_i p_i + \sum_i y_i}
 $$
-Dice Loss = $1 - \text{Dice}$
+Dice Loss $= 1 - \text{Dice}$
 
 ### 3. IoU Loss（交并比损失）
 衡量预测与真实掩码的交集与并集比例。
@@ -82,7 +127,7 @@ Dice Loss = $1 - \text{Dice}$
 $$
 \text{IoU} = \frac{\sum_i p_i y_i}{\sum_i p_i + \sum_i y_i - \sum_i p_i y_i}
 $$
-IoU Loss = $1 - \text{IoU}$
+IoU Loss $= 1 - \text{IoU}$
 
 ### 4. F1 Score（F1分数）
 综合考虑精确率（Precision）和召回率（Recall），是分割常用的综合指标。
@@ -92,8 +137,14 @@ $$
 \text{F1} = \frac{2 \cdot \text{Precision} \cdot \text{Recall}}{\text{Precision} + \text{Recall}}
 $$
 其中：
-- $\text{Precision} = \frac{TP}{TP+FP}$
-- $\text{Recall} = \frac{TP}{TP+FN}$
+
+$$
+\text{Precision} = \frac{TP}{TP + FP}
+$$
+
+$$
+\text{Recall} = \frac{TP}{TP + FN}
+$$
 
 ### 5. 评估流程图
 ```mermaid
